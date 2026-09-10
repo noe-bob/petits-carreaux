@@ -1,0 +1,10 @@
+# rien d'autre que le site ne doit partir sur GitHub
+*
+!index.html
+!manifest.webmanifest
+!icone.svg
+!icone-180.png
+!icone-192.png
+!icone-512.png
+!.gitignore
+!README.md
