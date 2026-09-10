@@ -16,6 +16,11 @@ create table if not exists donnees (
   primary key (utilisateur, cle)
 );
 
+-- Rejouable sans risque : si la table existait déjà (script lancé avant
+-- cette correction), « create table if not exists » ne l'aurait pas
+-- modifiée. Cette ligne rattrape le cas.
+alter table donnees alter column utilisateur set default auth.uid();
+
 -- Sécurité au niveau des lignes : sans ceci, la clé publique de
 -- l'application donnerait accès aux données de tout le monde.
 alter table donnees enable row level security;
