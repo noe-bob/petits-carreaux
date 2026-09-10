@@ -98,7 +98,11 @@ def convertir(texte):
                     duree = ecart
 
         uid = detexte(e.get("UID", "")) or ("ics%d" % n)
-        ident = "%s@%s" % (uid, deb[0])
+        titre = detexte(e.get("SUMMARY", "")) or "Cours"
+        # Promethee regenere ses UID a chaque export : l'identite doit venir
+        # du contenu, sinon tout rattachement se romprait chaque matin.
+        # La salle en est exclue : un changement de salle reste le meme cours.
+        ident = "%s %s %s" % (deb[0], deb[1] or "jour", titre)
         if ident in vus:
             continue
         vus.add(ident)
@@ -106,7 +110,7 @@ def convertir(texte):
         cours.append({
             "id": ident,
             "uid": uid,
-            "titre": detexte(e.get("SUMMARY", "")) or "Cours",
+            "titre": titre,
             "lieu": detexte(e.get("LOCATION", "")),
             "date": deb[0],
             "debut": deb[1],

@@ -3272,7 +3272,9 @@ ul.taches.tournees{ opacity: .72; }
 
       repetitions(deb.date, e.RRULE).forEach(function(jour){
         if (exclues[jour]) return;
-        var id = uid + "@" + jour;
+        /* même règle que le convertisseur côté serveur : l'identité vient du
+           contenu, car Prométhée régénère ses UID à chaque export */
+        var id = jour + " " + (deb.heure || "jour") + " " + titre;
         if (vus[id]) return;
         vus[id] = 1;
         out.push({
@@ -3346,7 +3348,7 @@ ul.taches.tournees{ opacity: .72; }
     var c = null;
     for (var i = 0; i < cours.length; i++) if (cours[i].id === id) { c = cours[i]; break; }
     if (!c) return;
-    rattachement = { uid: c.uid, nom: c.titre, date: c.date };
+    rattachement = { uid: c.id, nom: c.titre, date: c.date };
     majRattachement();
     $("#c-date").value = c.date;
     window.scrollTo({ top: 0, behavior: "smooth" });
