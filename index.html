@@ -892,6 +892,64 @@ ul.etapes{ list-style: none; margin: 0 0 6px; padding: 0; display: flex; flex-di
 
 .badge.rattache-b{ color: var(--encre-3); }
 
+/* ---------- ecran de connexion ---------- */
+.voile{
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(12, 15, 22, .55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.cx{
+  position: relative;
+  width: 100%;
+  max-width: 390px;
+  background: var(--surface);
+  border: 1px solid var(--ligne);
+  border-radius: 14px;
+  box-shadow: var(--ombre-flot);
+  padding: 24px 24px 20px;
+}
+.cx-titre{
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 21px;
+  font-weight: 600;
+  margin: 0 0 10px;
+  padding-right: 20px;
+}
+.cx-texte{ font-size: 13.5px; color: var(--encre-2); line-height: 1.6; margin: 0 0 16px; }
+.cx input{
+  width: 100%;
+  border: 1px solid var(--ligne-2);
+  background: var(--surface-2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 15px;
+  margin-bottom: 9px;
+}
+.cx-boutons{ display: flex; align-items: center; gap: 14px; margin-top: 6px; }
+.cx-erreur{
+  font-size: 12.5px;
+  color: var(--rouge);
+  margin: 12px 0 0;
+  min-height: 1em;
+  line-height: 1.5;
+}
+.cx-fermer{
+  position: absolute;
+  top: 10px; right: 12px;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--encre-3);
+  padding: 4px 8px;
+}
+.cx-fermer:hover{ color: var(--encre); }
+.sync{ cursor: pointer; }
+.sync:hover{ border-color: var(--ligne-2); }
+
 /* ---------- mode tournage ---------- */
 /* couleurs fixes, independantes du theme : on lit ce texte face camera */
 .tournage{
@@ -1249,6 +1307,35 @@ ul.taches.tournees{ opacity: .72; }
     </p>
   </div>
 
+  <div class="voile" id="connexion" hidden>
+    <div class="cx">
+      <h2 class="cx-titre">Retrouver mes données partout</h2>
+
+      <div id="cx-form">
+        <p class="cx-texte">Un compte relie ton PC et ton téléphone. Sans compte,
+          l'application fonctionne quand même, mais chaque appareil garde sa
+          propre liste.</p>
+        <input type="email" id="cx-mail" autocomplete="username"
+               placeholder="Adresse électronique" aria-label="Adresse électronique">
+        <input type="password" id="cx-mdp" autocomplete="current-password"
+               placeholder="Mot de passe" aria-label="Mot de passe">
+        <div class="cx-boutons">
+          <button type="button" class="ajouter" id="cx-entrer">Se connecter</button>
+          <button type="button" class="lien-b" id="cx-creer">Créer un compte</button>
+        </div>
+      </div>
+
+      <div id="cx-connecte" hidden>
+        <p class="cx-texte">Connecté en tant que <strong id="cx-qui"></strong>.
+          Tes tâches, tes idées et ton emploi du temps suivent tous tes appareils.</p>
+        <button type="button" class="lien-b" id="cx-sortir">Se déconnecter</button>
+      </div>
+
+      <p class="cx-erreur" id="cx-erreur"></p>
+      <button type="button" class="cx-fermer" id="cx-fermer" aria-label="Fermer">×</button>
+    </div>
+  </div>
+
   <div class="tournage" id="tournage" hidden aria-hidden="true">
     <div class="t-tete">
       <span class="t-titre" id="t-titre"></span>
@@ -1505,6 +1592,7 @@ ul.taches.tournees{ opacity: .72; }
   }
   function localEnregistrer(){
     ecritReglage(CLE_LOCAL, JSON.stringify({ taches: taches, cats: cats }));
+    marquer("taches");
   }
 
   function etatSync(etat, txt, aide){
@@ -3035,6 +3123,7 @@ ul.taches.tournees{ opacity: .72; }
 
   function localEnregistrerCours(){
     ecritReglage(CLE_COURS, JSON.stringify(cours));
+    marquer("cours");
   }
 
   function chargerCours(){
@@ -3291,6 +3380,7 @@ ul.taches.tournees{ opacity: .72; }
   function enregistrerIdees(){
     var lot = { idees: idees, rubriques: rubriques, catsVideo: catsVideo };
     ecritReglage(CLE_IDEES, JSON.stringify(lot));
+    marquer("idees");
     if (mode === "db") db.doc("reglages/idees").set(lot).catch(echecEcriture);
   }
 
@@ -3733,6 +3823,326 @@ ul.taches.tournees{ opacity: .72; }
     if (!document.fullscreenElement && tournageOuvert()) fermerTournage();
   });
 
+  /* ============ synchronisation entre appareils ============ */
+
+  /* La clé ci-dessous est publique par conception : elle n'ouvre rien sans
+     connexion. Ce sont les règles de sécurité de la base qui protègent les
+     données, chaque ligne n'étant lisible que par son propriétaire. */
+  var SUPA = {
+    url: "https://fnljialnonagsoscfgrg.supabase.co",
+    cle: "sb_publishable_ZtvS2n_iH2BI32VlpelQMw_6ciHLcWY"
+  };
+
+  var CLE_SESSION = "petits-carreaux.session";
+  var CLE_MAJ = "petits-carreaux.maj";
+
+  var session = null;      /* {jeton, rafraichissement, expire, courriel} */
+  var majLocale = {};      /* date de dernière modification, par collection */
+  var aPousser = {};       /* collections modifiées en attente d'envoi */
+  var minuteurEnvoi = null;
+  var enLigne = false;
+  var tirageEnCours = false;
+
+  /* Les trois collections synchronisées, chacune sachant se lire et s'écrire.
+     Elles reprennent exactement le découpage déjà utilisé en local. */
+  var COLLECTIONS = {
+    taches: {
+      lire: function(){ return { taches: taches, cats: cats }; },
+      ecrire: function(v){
+        if (Array.isArray(v.taches)) taches = v.taches;
+        if (Array.isArray(v.cats)) cats = v.cats;
+        ecritReglage(CLE_LOCAL, JSON.stringify({ taches: taches, cats: cats }));
+      }
+    },
+    idees: {
+      lire: function(){ return { idees: idees, rubriques: rubriques, catsVideo: catsVideo }; },
+      ecrire: function(v){
+        if (Array.isArray(v.idees)) idees = v.idees;
+        if (Array.isArray(v.rubriques)) rubriques = v.rubriques;
+        if (Array.isArray(v.catsVideo)) catsVideo = v.catsVideo;
+        ecritReglage(CLE_IDEES, JSON.stringify({
+          idees: idees, rubriques: rubriques, catsVideo: catsVideo
+        }));
+      }
+    },
+    cours: {
+      lire: function(){ return { cours: cours }; },
+      ecrire: function(v){
+        if (Array.isArray(v.cours)) cours = v.cours;
+        ecritReglage(CLE_COURS, JSON.stringify(cours));
+      }
+    }
+  };
+
+  /* --- session --- */
+
+  function chargerSession(){
+    try {
+      var b = JSON.parse(litReglage(CLE_SESSION) || "null");
+      if (b && b.jeton) session = b;
+    } catch (e) {}
+    try {
+      var m = JSON.parse(litReglage(CLE_MAJ) || "null");
+      if (m && typeof m === "object") majLocale = m;
+    } catch (e) {}
+  }
+
+  function garderSession(d, courriel){
+    session = {
+      jeton: d.access_token,
+      rafraichissement: d.refresh_token,
+      expire: Date.now() + ((d.expires_in || 3600) * 1000),
+      courriel: courriel || (d.user && d.user.email) || ""
+    };
+    ecritReglage(CLE_SESSION, JSON.stringify(session));
+  }
+
+  function oublierSession(){
+    session = null;
+    ecritReglage(CLE_SESSION, "");
+    enLigne = false;
+    majEtatSync();
+  }
+
+  /* --- appels réseau --- */
+
+  function appel(chemin, options){
+    options = options || {};
+    var entetes = { "apikey": SUPA.cle, "Content-Type": "application/json" };
+    for (var k in (options.entetes || {})) entetes[k] = options.entetes[k];
+    return fetch(SUPA.url + chemin, {
+      method: options.methode || "GET",
+      headers: entetes,
+      body: options.corps ? JSON.stringify(options.corps) : undefined
+    });
+  }
+
+  /* Renvoie un jeton valide, en le renouvelant si besoin. */
+  function jetonValide(){
+    if (!session) return Promise.resolve(null);
+    if (Date.now() < session.expire - 60000) return Promise.resolve(session.jeton);
+
+    return appel("/auth/v1/token?grant_type=refresh_token", {
+      methode: "POST",
+      corps: { refresh_token: session.rafraichissement }
+    }).then(function(r){
+      if (!r.ok) throw new Error("renouvellement refusé");
+      return r.json();
+    }).then(function(d){
+      garderSession(d, session.courriel);
+      return session.jeton;
+    }).catch(function(){
+      /* le renouvellement a échoué : on reste utilisable hors ligne */
+      enLigne = false;
+      majEtatSync();
+      return null;
+    });
+  }
+
+  function appelDonnees(chemin, options){
+    return jetonValide().then(function(t){
+      if (!t) return null;
+      options = options || {};
+      options.entetes = options.entetes || {};
+      options.entetes["Authorization"] = "Bearer " + t;
+      return appel("/rest/v1" + chemin, options);
+    });
+  }
+
+  /* --- connexion --- */
+
+  function identifier(chemin, courriel, mdp){
+    return appel(chemin, { methode: "POST", corps: { email: courriel, password: mdp } })
+      .then(function(r){
+        return r.json().then(function(d){
+          if (!r.ok || !d.access_token) {
+            throw new Error(d.msg || d.error_description || d.message || "identifiants refusés");
+          }
+          garderSession(d, courriel);
+          return d;
+        });
+      });
+  }
+
+  function seConnecter(courriel, mdp){
+    return identifier("/auth/v1/token?grant_type=password", courriel, mdp);
+  }
+
+  function sInscrire(courriel, mdp){
+    return identifier("/auth/v1/signup", courriel, mdp);
+  }
+
+  /* --- envoi --- */
+
+  function marquer(cle){
+    if (!COLLECTIONS[cle]) return;
+    majLocale[cle] = new Date().toISOString();
+    ecritReglage(CLE_MAJ, JSON.stringify(majLocale));
+    if (!session) return;
+    aPousser[cle] = 1;
+    if (minuteurEnvoi) clearTimeout(minuteurEnvoi);
+    minuteurEnvoi = setTimeout(pousser, 1200);
+  }
+
+  function pousser(){
+    minuteurEnvoi = null;
+    var cles = Object.keys(aPousser);
+    if (!cles.length || !session) return;
+
+    var lot = cles.map(function(c){
+      return { cle: c, valeur: COLLECTIONS[c].lire() };
+    });
+
+    appelDonnees("/donnees", {
+      methode: "POST",
+      corps: lot,
+      entetes: { "Prefer": "resolution=merge-duplicates,return=representation" }
+    }).then(function(r){
+      if (!r) return;
+      if (!r.ok) return r.text().then(function(t){ throw new Error(t.slice(0, 150)); });
+      return r.json();
+    }).then(function(lignes){
+      if (!lignes) return;
+      lignes.forEach(function(l){
+        majLocale[l.cle] = l.maj;
+        delete aPousser[l.cle];
+      });
+      ecritReglage(CLE_MAJ, JSON.stringify(majLocale));
+      enLigne = true;
+      majEtatSync();
+    }).catch(function(e){
+      enLigne = false;
+      majEtatSync(e && e.message);
+      /* les collections restent marquées : elles repartiront au prochain essai */
+    });
+  }
+
+  /* --- réception --- */
+
+  function tirer(){
+    if (!session || tirageEnCours) return Promise.resolve();
+    tirageEnCours = true;
+
+    return appelDonnees("/donnees?select=cle,valeur,maj").then(function(r){
+      if (!r) return null;
+      if (!r.ok) throw new Error("lecture refusée (" + r.status + ")");
+      return r.json();
+    }).then(function(lignes){
+      if (!lignes) return;
+
+      var vus = {}, changement = false;
+
+      lignes.forEach(function(l){
+        if (!COLLECTIONS[l.cle]) return;
+        vus[l.cle] = 1;
+        var local = majLocale[l.cle];
+        /* le plus récent gagne ; à égalité on garde ce qui vient du serveur */
+        if (local && local > l.maj) { aPousser[l.cle] = 1; return; }
+        COLLECTIONS[l.cle].ecrire(l.valeur || {});
+        majLocale[l.cle] = l.maj;
+        changement = true;
+      });
+
+      /* ce que le serveur ne connaît pas encore part à l'envoi */
+      Object.keys(COLLECTIONS).forEach(function(c){
+        if (!vus[c] && majLocale[c]) aPousser[c] = 1;
+      });
+
+      ecritReglage(CLE_MAJ, JSON.stringify(majLocale));
+      enLigne = true;
+      majEtatSync();
+
+      if (changement) rendre(true);
+      if (Object.keys(aPousser).length) pousser();
+    }).catch(function(e){
+      enLigne = false;
+      majEtatSync(e && e.message);
+    }).then(function(){
+      tirageEnCours = false;
+    });
+  }
+
+  /* --- état affiché --- */
+
+  function majEtatSync(detail){
+    if (!session) {
+      etatSync("local", "Hors compte", "Tes données restent sur cet appareil. Clique pour te connecter et les retrouver partout.");
+      return;
+    }
+    if (enLigne) {
+      etatSync("ok", "Synchronisé", session.courriel + " — tes données suivent tous tes appareils. Clique pour te déconnecter.");
+    } else {
+      etatSync("local", "Hors ligne", (detail ? detail + " — " : "") +
+        "Tes modifications sont gardées ici et repartiront dès le retour du réseau.");
+    }
+  }
+
+  /* --- écran de connexion --- */
+
+  function ouvrirConnexion(){
+    var b = $("#connexion");
+    if (!b) return;
+    b.hidden = false;
+    $("#cx-erreur").textContent = "";
+    if (session) {
+      $("#cx-connecte").hidden = false;
+      $("#cx-form").hidden = true;
+      $("#cx-qui").textContent = session.courriel;
+    } else {
+      $("#cx-connecte").hidden = true;
+      $("#cx-form").hidden = false;
+      $("#cx-mail").focus();
+    }
+  }
+
+  function fermerConnexion(){
+    var b = $("#connexion");
+    if (b) b.hidden = true;
+  }
+
+  function tenter(fn){
+    var mail = $("#cx-mail").value.trim();
+    var mdp = $("#cx-mdp").value;
+    var err = $("#cx-erreur");
+
+    if (!mail || !mdp) { err.textContent = "Renseigne ton adresse et ton mot de passe."; return; }
+    if (mdp.length < 6) { err.textContent = "Le mot de passe doit faire au moins 6 caractères."; return; }
+
+    err.textContent = "Connexion…";
+    fn(mail, mdp).then(function(){
+      err.textContent = "";
+      $("#cx-mdp").value = "";
+      fermerConnexion();
+      enLigne = true;
+      majEtatSync();
+      tirer();
+    }).catch(function(e){
+      var m = String((e && e.message) || e);
+      if (/already registered/i.test(m)) m = "Cette adresse a déjà un compte : utilise « Se connecter ».";
+      else if (/Invalid login/i.test(m)) m = "Adresse ou mot de passe incorrect.";
+      err.textContent = m;
+    });
+  }
+
+  $("#sync").addEventListener("click", ouvrirConnexion);
+  $("#cx-fermer").addEventListener("click", fermerConnexion);
+  $("#cx-entrer").addEventListener("click", function(){ tenter(seConnecter); });
+  $("#cx-creer").addEventListener("click", function(){ tenter(sInscrire); });
+  $("#cx-sortir").addEventListener("click", function(){
+    if (!window.confirm("Se déconnecter ? Tes données restent sur cet appareil.")) return;
+    oublierSession();
+    fermerConnexion();
+  });
+  $("#cx-mdp").addEventListener("keydown", function(ev){
+    if (ev.key === "Enter") { ev.preventDefault(); tenter(seConnecter); }
+  });
+
+  /* on récupère les changements des autres appareils au retour sur l'onglet */
+  document.addEventListener("visibilitychange", function(){
+    if (!document.hidden && session) tirer();
+  });
+  window.addEventListener("online", function(){ if (session) tirer(); });
+
   /* ============ sauvegarde ============ */
 
   var CLE_SAUV = "petits-carreaux.sauvegarde";
@@ -3957,6 +4367,7 @@ ul.taches.tournees{ opacity: .72; }
         (window.matchMedia("(max-width: 720px)").matches ? "jour" : "tout");
   if (!VUES.some(function(v){ return v.id === vue; })) vue = "tout";
 
+  chargerSession();
   localCharger();
   chargerCours();
   chargerIdees();
@@ -3965,6 +4376,8 @@ ul.taches.tournees{ opacity: .72; }
   majNoteSauvegarde();
   majNoteEdt();
   majRattachement();
+  majEtatSync();
+  if (session) tirer();
   connecter();
 
   var jourCourant = auj();
