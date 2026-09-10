@@ -1,0 +1,45 @@
+name: Garder la base active
+
+# Un projet Supabase gratuit est mis en pause après 7 jours sans requête.
+# Une interrogation quotidienne suffit à l'en empêcher.
+
+on:
+  schedule:
+    - cron: "17 6 * * *"   # tous les jours vers 8h17, heure de Paris
+  workflow_dispatch:        # et à la demande, depuis l'onglet Actions
+
+jobs:
+  interroger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Interroger la base
+        env:
+          URL: ${{ secrets.SUPABASE_URL }}
+          CLE: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$URL" ] || [ -z "$CLE" ]; then
+            echo "Secrets SUPABASE_URL / SUPABASE_ANON_KEY absents : rien à faire."
+            exit 0
+          fi
+
+          code=$(curl -sS -o /tmp/reponse -w "%{http_code}" --max-time 30 \
+                 -H "apikey: $CLE" \
+                 "${URL%/}/rest/v1/donnees?select=cle&limit=1") || code="000"
+
+          echo "Réponse : HTTP $code"
+
+          case "$code" in
+            200|206)
+              echo "Base joignable et active." ;;
+            401|403)
+              # la clé anonyme seule ne voit aucune ligne : c'est normal et
+              # la requête compte quand même comme activité
+              echo "Base joignable (accès refusé sans session, attendu)." ;;
+            000)
+              echo "::error::Aucune réponse de la base."
+              exit 1 ;;
+            *)
+              echo "::error::Réponse inattendue (HTTP $code)"
+              head -c 300 /tmp/reponse || true
+              exit 1 ;;
+          esac

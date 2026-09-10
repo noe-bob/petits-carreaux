@@ -1,10 +1,18 @@
-# rien d'autre que le site ne doit partir sur GitHub
+# Liste blanche : rien ne part sur GitHub sauf ce qui est explicitement autorisé.
+# Surtout pas emploi-du-temps.ics ni .calendrier-url.txt.
 *
+
+!.gitignore
+!README.md
 !index.html
 !manifest.webmanifest
+!supabase.sql
 !icone.svg
 !icone-180.png
 !icone-192.png
 !icone-512.png
-!.gitignore
-!README.md
+
+# le dossier doit être ré-autorisé niveau par niveau
+!.github/
+!.github/workflows/
+!.github/workflows/garder-active.yml
