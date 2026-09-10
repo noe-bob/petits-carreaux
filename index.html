@@ -1328,7 +1328,12 @@ ul.taches.tournees{ opacity: .72; }
       <div id="cx-connecte" hidden>
         <p class="cx-texte">Connecté en tant que <strong id="cx-qui"></strong>.
           Tes tâches, tes idées et ton emploi du temps suivent tous tes appareils.</p>
-        <button type="button" class="lien-b" id="cx-sortir">Se déconnecter</button>
+        <input type="password" id="cx-neuf" autocomplete="new-password"
+               placeholder="Nouveau mot de passe (facultatif)" aria-label="Nouveau mot de passe">
+        <div class="cx-boutons">
+          <button type="button" class="ajouter" id="cx-changer">Changer le mot de passe</button>
+          <button type="button" class="lien-b" id="cx-sortir">Se déconnecter</button>
+        </div>
       </div>
 
       <p class="cx-erreur" id="cx-erreur"></p>
@@ -4128,6 +4133,37 @@ ul.taches.tournees{ opacity: .72; }
   $("#cx-fermer").addEventListener("click", fermerConnexion);
   $("#cx-entrer").addEventListener("click", function(){ tenter(seConnecter); });
   $("#cx-creer").addEventListener("click", function(){ tenter(sInscrire); });
+  $("#cx-changer").addEventListener("click", function(){
+    var neuf = $("#cx-neuf").value;
+    var err = $("#cx-erreur");
+
+    if (neuf.length < 8) {
+      err.textContent = "Choisis au moins 8 caractères, et un mot de passe qui ne serve qu'ici.";
+      return;
+    }
+
+    err.textContent = "Changement…";
+    jetonValide().then(function(t){
+      if (!t) throw new Error("session expirée : reconnecte-toi");
+      return appel("/auth/v1/user", {
+        methode: "PUT",
+        corps: { password: neuf },
+        entetes: { "Authorization": "Bearer " + t }
+      });
+    }).then(function(r){
+      return r.json().then(function(d){
+        if (!r.ok) throw new Error(d.msg || d.message || "changement refusé");
+        return d;
+      });
+    }).then(function(){
+      $("#cx-neuf").value = "";
+      err.textContent = "";
+      window.alert("Mot de passe changé. Les autres appareils resteront connectés.");
+    }).catch(function(e){
+      err.textContent = String((e && e.message) || e);
+    });
+  });
+
   $("#cx-sortir").addEventListener("click", function(){
     if (!window.confirm("Se déconnecter ? Tes données restent sur cet appareil.")) return;
     oublierSession();

@@ -16,3 +16,9 @@
 !.github/
 !.github/workflows/
 !.github/workflows/garder-active.yml
+!.github/workflows/emploi-du-temps.yml
+
+# le convertisseur et le publieur, utilises par la tache quotidienne
+!outils/
+!outils/ics_vers_cours.py
+!outils/publier_cours.py

@@ -1,0 +1,51 @@
+name: Emploi du temps
+
+# Télécharge le calendrier de l'école et l'écrit dans la base, chaque matin.
+# La page ne peut pas le faire elle-même : le serveur de l'école n'autorise
+# pas la lecture inter-site. Ici on est côté serveur, la règle ne s'applique pas.
+#
+# La tâche se connecte comme l'utilisateur, avec le compte de l'application :
+# elle n'accède donc qu'à ses propres données, jamais à l'administration.
+
+on:
+  schedule:
+    - cron: "42 5 * * *"   # tous les jours vers 7h42, heure de Paris
+  workflow_dispatch:
+
+jobs:
+  publier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Vérifier que les secrets sont en place
+        env:
+          COURRIEL: ${{ secrets.APP_COURRIEL }}
+          MDP: ${{ secrets.APP_MOTDEPASSE }}
+          LIEN: ${{ secrets.CALENDRIER_URL }}
+        run: |
+          manquants=""
+          [ -z "$LIEN" ]     && manquants="$manquants CALENDRIER_URL"
+          [ -z "$COURRIEL" ] && manquants="$manquants APP_COURRIEL"
+          [ -z "$MDP" ]      && manquants="$manquants APP_MOTDEPASSE"
+          if [ -n "$manquants" ]; then
+            echo "::notice::Secrets absents :$manquants — rien à faire pour l'instant."
+            echo "PRET=non" >> "$GITHUB_ENV"
+          else
+            echo "PRET=oui" >> "$GITHUB_ENV"
+          fi
+
+      - name: Publier l'emploi du temps
+        if: env.PRET == 'oui'
+        working-directory: outils
+        env:
+          CALENDRIER_URL: ${{ secrets.CALENDRIER_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          APP_COURRIEL: ${{ secrets.APP_COURRIEL }}
+          APP_MOTDEPASSE: ${{ secrets.APP_MOTDEPASSE }}
+        run: python publier_cours.py
