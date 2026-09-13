@@ -9,7 +9,11 @@ name: Emploi du temps
 
 on:
   schedule:
-    - cron: "42 5 * * *"   # tous les jours vers 7h42, heure de Paris
+    # Toutes les quatre heures. GitHub execute les taches planifiees des
+    # depots gratuits en basse priorite : compter 4 a 5 h de retard sur
+    # l'heure demandee. Le passage de 00h42 UTC retombe donc vers 6-7 h du
+    # matin a Paris, avant les premiers cours.
+    - cron: "42 */4 * * *"
   workflow_dispatch:
 
 jobs:
