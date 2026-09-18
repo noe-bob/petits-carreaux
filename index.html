@@ -841,6 +841,23 @@ ul.etapes{ list-style: none; margin: 0 0 6px; padding: 0; display: flex; flex-di
   cursor: default;
 }
 .bloc-cours .ch{ font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 9px; color: var(--encre-3); }
+/* la salle : l'information qu'on cherche d'un coup d'oeil en marchant vers le cours */
+.bloc-cours .cs{
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--encre);
+  margin-left: 6px;
+}
+.tj-salle{ font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 600; color: var(--encre); }
+
+/* sur téléphone la semaine n'affiche qu'une journée : la colonne est large,
+   le texte peut grandir pour se lire d'un coup d'œil */
+@media (max-width: 720px){
+  .bloc-cours{ font-size: 12.5px; padding: 4px 8px; line-height: 1.3; }
+  .bloc-cours .ch{ font-size: 10.5px; }
+  .bloc-cours .cs{ font-size: 12px; }
+}
 .bloc-cours .cl{ display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .tj.cours{ background: var(--surface-2); border-left-color: var(--ligne-2); color: var(--encre-2); }
@@ -878,7 +895,17 @@ ul.etapes{ list-style: none; margin: 0 0 6px; padding: 0; display: flex; flex-di
   flex: none;
 }
 .cours-l .n{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cours-l .lieu{ font-size: 11px; color: var(--encre-3); flex: none; }
+.cours-l .lieu{
+  flex: none;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--encre);
+  background: var(--surface-2);
+  border: 1px solid var(--ligne);
+  border-radius: 4px;
+  padding: 0 6px;
+}
 .cours-l .att{
   margin-left: auto;
   flex: none;
@@ -2254,7 +2281,8 @@ ul.taches.tournees{ opacity: .72; }
       h += '<div class="tj-cell">';
       coursDuJour(j).forEach(function(c){
         if (c.debut) return;
-        h += '<span class="tj cours">' + esc(c.titre) + "</span>";
+        h += '<span class="tj cours">' + esc(c.titre) +
+             (c.lieu ? ' <b class="tj-salle">' + esc(c.lieu) + "</b>" : "") + "</span>";
       });
       (carte[j] || []).filter(function(x){ return !x.heure; }).forEach(function(x){
         h += '<button type="button" class="tj' + (x.faite ? " faite" : "") + (x.priorite ? " prio" : "") +
@@ -2290,7 +2318,8 @@ ul.taches.tournees{ opacity: .72; }
         var haut1 = Math.max(17, ((c.duree || 60) / 60) * hpx - 2);
         h += '<div class="bloc-cours" style="top:' + haut0.toFixed(1) + "px;height:" + haut1.toFixed(1) + 'px" title="' +
              esc(c.titre + (c.lieu ? " — " + c.lieu : "")) + '">' +
-             '<span class="ch">' + esc(libelleCreneau(c.debut, c.duree)) + "</span> " +
+             '<span class="ch">' + esc(libelleCreneau(c.debut, c.duree)) + "</span>" +
+             (c.lieu ? '<span class="cs">' + esc(c.lieu) + "</span>" : "") +
              '<span class="cl">' + esc(c.titre) + "</span></div>";
       });
 
