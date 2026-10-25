@@ -255,6 +255,8 @@ input.pilule[type="date"]{ font-family: "JetBrains Mono", ui-monospace, monospac
 
 /* ---------- corps ---------- */
 .corps{ display: grid; grid-template-columns: 1fr; gap: 20px; }
+/* sans ce min-width, la barre d'onglets elargit toute la colonne sur telephone */
+.principal, .rail{ min-width: 0; }
 @media (min-width: 900px){
   .corps{ grid-template-columns: 1fr 232px; gap: 20px 40px; align-items: start; }
   .principal{ grid-column: 1; grid-row: 1; }
@@ -1296,6 +1298,109 @@ ul.taches.tournees{ opacity: .72; }
   .marque{ font-size: 23px; }
   .astuce{ display: none; }
 }
+/* ---------- tier lists ---------- */
+/* les couleurs des rangs sont fixes, comme sur toutes les tier lists : on les reconnait */
+.tl-tete{ display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-bottom: 12px; }
+.tl-tete select.pilule{ font-size: 13px; max-width: 100%; color: var(--encre); font-weight: 600; }
+.tl-tete .tl-espace{ flex: 1; }
+.tl-plateau{
+  border: 1px solid var(--ligne-2);
+  border-radius: var(--r);
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--ombre);
+}
+.tl-rang{ display: grid; grid-template-columns: 58px 1fr; min-height: 58px; border-top: 1px solid var(--ligne); }
+.tl-rang:first-child{ border-top: 0; }
+.tl-lettre{
+  display: flex; align-items: center; justify-content: center;
+  background: var(--rg); color: #14161C;
+  font-family: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+  font-weight: 800; font-size: 24px;
+}
+.tl-zone{
+  display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px;
+  padding: 8px; min-height: 58px; cursor: pointer;
+}
+.tl-zone.cible{ background: var(--accent-doux); }
+.tl-reserve{
+  margin-top: 14px;
+  border: 1px dashed var(--ligne-2);
+  border-radius: var(--r);
+  padding: 10px;
+  min-height: 56px;
+}
+.tl-reserve .tl-etiq{
+  display: block; margin-bottom: 7px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--encre-3);
+}
+.tl-puce{
+  border: 1px solid var(--ligne-2);
+  background: var(--surface-2);
+  color: var(--encre);
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 14px;
+  line-height: 1.3;
+  text-align: left;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+.tl-puce[aria-pressed="true"]{ border-color: var(--accent); background: var(--accent); color: var(--sur-accent); }
+.tl-aide{ margin: 10px 0 0; font-size: 12px; color: var(--encre-3); line-height: 1.6; }
+.tl-edit{ display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.tl-edit input, .tl-edit textarea{
+  border: 1px solid var(--ligne-2); background: var(--surface); border-radius: 7px;
+  padding: 8px 10px; font-size: 14px; color: var(--encre); font-family: inherit;
+}
+.tl-edit textarea{ min-height: 220px; line-height: 1.5; resize: vertical; }
+.tl-edit .tl-boutons{ display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* mode tournage : plein écran, fond sombre fixe, gros caractères */
+.tlt{
+  position: fixed; inset: 0; z-index: 91;
+  background: #0B0D11; color: #F2F4F9;
+  display: flex; flex-direction: column;
+  font-family: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+  padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
+  gap: 12px;
+}
+.tlt-titre{
+  font-family: "Newsreader", Georgia, serif; font-weight: 600;
+  font-size: clamp(22px, 5vw, 34px); line-height: 1.15; text-align: center; margin: 4px 0 0;
+}
+.tlt-plateau{ flex: 1; min-height: 0; display: flex; flex-direction: column; border-radius: 10px; overflow: hidden; border: 1px solid #232833; }
+.tlt-rang{ flex: 1; min-height: 0; display: grid; grid-template-columns: clamp(52px, 13vw, 84px) 1fr; border-top: 1px solid #232833; }
+.tlt-rang:first-child{ border-top: 0; }
+.tlt-rang .tl-lettre{ font-size: clamp(26px, 7vw, 40px); }
+.tlt-zone{
+  display: flex; flex-wrap: wrap; align-content: center; gap: 6px;
+  padding: 6px 8px; background: #12151B; cursor: pointer; overflow: hidden;
+}
+.tlt-zone:active{ background: #1B2030; }
+.tlt-puce{
+  background: #222836; border: 1px solid #343B4B; border-radius: 7px;
+  padding: 5px 9px; font-size: clamp(14px, 3.6vw, 19px); font-weight: 600; color: #F2F4F9;
+}
+.tlt-puce.neuve{ animation: tlt-pose .35s ease-out; }
+@keyframes tlt-pose{ from{ transform: scale(1.35); background: #3A4566; } to{ transform: none; } }
+.tlt-carte{
+  flex: none; text-align: center;
+  background: #F2F4F9; color: #0B0D11;
+  border-radius: 12px; padding: 16px 14px 14px;
+}
+.tlt-carte .tlt-compte{
+  display: block; font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px; letter-spacing: .08em; color: #5B6376; margin-bottom: 4px;
+}
+.tlt-carte .tlt-element{ font-size: clamp(26px, 7.5vw, 44px); font-weight: 800; line-height: 1.15; overflow-wrap: anywhere; }
+.tlt-carte.fin{ background: #171B23; color: #F2F4F9; }
+.tlt-barre{ flex: none; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.tlt-barre .t-b{ padding: 8px 14px; font-size: 14px; }
+
 </style>
 </head>
 <body>
@@ -1383,6 +1488,8 @@ ul.taches.tournees{ opacity: .72; }
     </div>
   </div>
 
+  <div class="tlt" id="tlt" hidden aria-hidden="true"></div>
+
   <div class="corps">
     <div class="principal">
       <nav class="vues" id="vues" aria-label="Vues"></nav>
@@ -1452,7 +1559,8 @@ ul.taches.tournees{ opacity: .72; }
     { id: "avenir", nom: "À venir" },
     { id: "tout",   nom: "Tout" },
     { id: "faites", nom: "Terminées" },
-    { id: "idees",  nom: "Ascension Maths" }
+    { id: "idees",  nom: "Ascension Maths" },
+    { id: "tier",   nom: "Tier lists" }
   ];
 
   var RUBRIQUES_DEFAUT = ["Format court", "Format long"];
@@ -2490,9 +2598,12 @@ ul.taches.tournees{ opacity: .72; }
 
     /* le composeur de taches n'a pas de sens sur l'onglet des idees */
     var comp = $("#composeur");
-    if (comp) comp.hidden = (vue === "idees");
+    if (comp) comp.hidden = (vue === "idees" || vue === "tier");
+    var rech = $("#recherche");
+    if (rech) rech.hidden = (vue === "tier");
 
     if (vue === "idees") { rendreIdees(boite, fk); return; }
+    if (vue === "tier") { rendreTier(boite); return; }
     if (!requete && vue === "agenda") { rendreAgenda(boite, fk); return; }
 
     var g = groupes();
@@ -3394,6 +3505,391 @@ ul.taches.tournees{ opacity: .72; }
     el.querySelector("strong").textContent = rattachement.nom;
   }
 
+  /* ============ Tier lists ============ */
+
+  var RANGS = [
+    { k: "S", c: "#FF7F7F" },
+    { k: "A", c: "#FFBF7F" },
+    { k: "B", c: "#FFDF7F" },
+    { k: "C", c: "#BFFF7F" },
+    { k: "D", c: "#7FBFFF" },
+    { k: "F", c: "#C9A6FF" }
+  ];
+
+  /* les listes proposées le 25 octobre 2026 ; seulement amorcées si l'appareil n'a rien */
+  var TIER_DEPART = [
+    ["Les chapitres de terminale", "Suites; Limites; Continuité; Dérivation; Convexité; Logarithme; Exponentielle; Primitives et intégrales; Probabilités; Géométrie dans l'espace; Combinatoire"],
+    ["Les fonctions usuelles", "Affine; Carré; Inverse; Racine carrée; Valeur absolue; Exponentielle; Logarithme; Sinus; Cosinus"],
+    ["Les formules de dérivation", "(uv)'; (u/v)'; (u∘v)'; (eᵘ)'; (ln u)'; (√u)'; (uⁿ)'"],
+    ["Les identités remarquables", "(a+b)²; (a−b)²; a²−b²; (a+b)³; a³−b³; La forme canonique"],
+    ["Les méthodes pour étudier un signe", "Tableau de signes; Factorisation; Discriminant; Dérivée; Valeurs intermédiaires; Je regarde la courbe"],
+    ["Les théorèmes du collège", "Pythagore; Thalès; Réciproque de Thalès; Droite des milieux; Somme des angles; Inégalité triangulaire"],
+    ["Les erreurs de copie", "√(a+b) = √a + √b; (a+b)² = a² + b²; ln(a+b) = ln a · ln b; Diviser par zéro; Oublier la valeur absolue; Confondre « et » et « ou »"],
+    ["Les calculatrices", "TI-83 Premium; NumWorks; Casio Graph 90+E; Casio 35+E; La calculatrice du téléphone"],
+    ["Les théorèmes qui portent un nom", "Rolle; Accroissements finis; Bolzano-Weierstrass; Cauchy-Schwarz; Heine; Taylor-Lagrange; Darboux; d'Alembert"],
+    ["Les méthodes de calcul d'intégrale", "Primitive directe; Intégration par parties; Changement de variable; Éléments simples; Symétrie; Wallis; La calculatrice"],
+    ["Les critères de convergence des séries", "Comparaison; Équivalents; d'Alembert; Cauchy; Séries alternées; Comparaison série-intégrale; Riemann"],
+    ["Montrer qu'une matrice est diagonalisable", "Polynôme annulateur scindé à racines simples; n valeurs propres distinctes; Dimensions des sous-espaces propres; Symétrique réelle; Je calcule"],
+    ["Les filières de prépa", "MPSI; MP2I; PCSI; PTSI; BCPST; ECG; TSI"],
+    ["Les concours", "X; ENS; Mines-Ponts; Centrale; CCINP; e3a; HEC; ESSEC"],
+    ["Les types de raisonnement", "Direct; Contraposée; Absurde; Récurrence; Analyse-synthèse; Disjonction de cas; Contre-exemple"],
+    ["Les lettres grecques en maths", "π; Σ; ε; Δ; λ; θ; φ; α; β; μ; ξ; ο"],
+    ["Les symboles", "∀; ∃; ⇔; ⇒; ∈; ∅; ∞; ∫; ∑; ∂; ≡; ∝"],
+    ["Les nombres célèbres", "0; 1; π; e; i; φ; √2; γ; 1729; −1/12"],
+    ["Les mathématiciens", "Euclide; Archimède; Fermat; Euler; Gauss; Cauchy; Galois; Riemann; Noether; Ramanujan; Grothendieck"],
+    ["Les mathématiciens français", "Descartes; Pascal; Fermat; Lagrange; Laplace; Fourier; Cauchy; Galois; Poincaré; Grothendieck; Villani"],
+    ["Les plus belles formules", "e^(iπ) + 1 = 0; Σ 1/n² = π²/6; Formule d'Euler des polyèdres; Stirling; Pythagore; Théorème fondamental de l'analyse"],
+    ["Les problèmes ouverts", "Hypothèse de Riemann; Goldbach; Premiers jumeaux; Collatz; P = NP; Irrationalité de e + π"],
+    ["Les façons d'écrire « donc »", "Donc; D'où; Ainsi; Par conséquent; ∴; Il vient; On en déduit"],
+    ["Les méthodes de révision", "Relire son cours; Fiches; Flashcards; Refaire les exos sans corrigé; Vidéos YouTube; Travail en groupe; ChatGPT; Annales"],
+    ["Les excuses pour les devoirs non faits", "Mon chien l'a mangé; J'étais malade; J'ai oublié mon cahier; Je n'avais pas compris la consigne; Le wifi a lâché; Je croyais que c'était pour la semaine prochaine"]
+  ];
+
+  var CLE_TIER = "petits-carreaux.tierlists";
+  var tierlists = [];
+  var tierActif = null;     /* id de la liste affichée */
+  var tierSel = null;       /* id de l'élément pris en main, en attente d'un rang */
+  var tierEdition = false;
+  var tierTour = null;      /* partie en cours en mode tournage */
+
+  function rangsVides(){
+    var r = {};
+    RANGS.forEach(function(x){ r[x.k] = []; });
+    return r;
+  }
+
+  function nouvelleTier(titre, textes){
+    return {
+      id: nouvelId("l"),
+      titre: titre,
+      items: textes.map(function(t){ return { id: nouvelId("e"), t: t }; }),
+      rangs: rangsVides(),
+      creeLe: Date.now()
+    };
+  }
+
+  function propreTier(l){
+    if (!l || typeof l.titre !== "string" || !Array.isArray(l.items)) return null;
+    var items = l.items.filter(function(x){ return x && typeof x.t === "string" && x.t.trim(); })
+      .map(function(x){ return { id: (typeof x.id === "string" && x.id) ? x.id : nouvelId("e"), t: x.t }; });
+    var connus = {};
+    items.forEach(function(x){ connus[x.id] = 1; });
+    var rangs = rangsVides(), place = {};
+    RANGS.forEach(function(r){
+      var src = l.rangs && Array.isArray(l.rangs[r.k]) ? l.rangs[r.k] : [];
+      src.forEach(function(id){
+        if (connus[id] && !place[id]) { place[id] = 1; rangs[r.k].push(id); }
+      });
+    });
+    return { id: (typeof l.id === "string" && l.id) ? l.id : nouvelId("l"), titre: l.titre,
+             items: items, rangs: rangs, creeLe: typeof l.creeLe === "number" ? l.creeLe : Date.now() };
+  }
+
+  function chargerTier(){
+    var b = null;
+    try { b = JSON.parse(litReglage(CLE_TIER) || "null"); } catch (e) {}
+    if (b && Array.isArray(b.listes)) {
+      tierlists = b.listes.map(propreTier).filter(Boolean);
+    } else {
+      /* première ouverture : on amorce sans marquer, pour ne pas écraser ce qu'un autre appareil aurait déjà */
+      tierlists = TIER_DEPART.map(function(d){ return nouvelleTier(d[0], d[1].split("; ")); });
+      ecritReglage(CLE_TIER, JSON.stringify({ listes: tierlists }));
+    }
+    var a = litReglage(CLE_TIER + ".actif");
+    tierActif = tierlists.some(function(l){ return l.id === a; }) ? a : (tierlists[0] ? tierlists[0].id : null);
+  }
+
+  function enregistrerTier(){
+    ecritReglage(CLE_TIER, JSON.stringify({ listes: tierlists }));
+    marquer("tierlists");
+  }
+
+  function listeActive(){
+    for (var i = 0; i < tierlists.length; i++) if (tierlists[i].id === tierActif) return tierlists[i];
+    return tierlists[0] || null;
+  }
+
+  function rangDe(l, id){
+    for (var i = 0; i < RANGS.length; i++) if (l.rangs[RANGS[i].k].indexOf(id) >= 0) return RANGS[i].k;
+    return null;
+  }
+
+  function texteDe(l, id){
+    for (var i = 0; i < l.items.length; i++) if (l.items[i].id === id) return l.items[i].t;
+    return "";
+  }
+
+  /* k = lettre du rang, ou null pour renvoyer l'élément dans la réserve */
+  function placer(l, id, k){
+    RANGS.forEach(function(r){
+      var i = l.rangs[r.k].indexOf(id);
+      if (i >= 0) l.rangs[r.k].splice(i, 1);
+    });
+    if (k && l.rangs[k]) l.rangs[k].push(id);
+  }
+
+  function htmlPuce(l, id){
+    return '<button type="button" class="tl-puce" draggable="true" data-tl-puce="' + esc(id) +
+           '" aria-pressed="' + (tierSel === id ? "true" : "false") + '">' + esc(texteDe(l, id)) + "</button>";
+  }
+
+  function rendreTier(boite){
+    var l = listeActive();
+    var h = '<div class="tl-tete">';
+    h += '<select class="pilule" id="tl-choix" aria-label="Tier list affichée">';
+    tierlists.forEach(function(x){
+      h += '<option value="' + esc(x.id) + '"' + (l && x.id === l.id ? " selected" : "") + ">" + esc(x.titre) + "</option>";
+    });
+    h += "</select>";
+    h += '<button type="button" class="pilule" data-tl="nouvelle">+ nouvelle</button>';
+    h += '<span class="tl-espace"></span>';
+    if (l) {
+      h += '<button type="button" class="pilule" data-tl="modifier">modifier</button>';
+      h += '<button type="button" class="pilule" data-tl="vider">tout remettre en réserve</button>';
+      h += '<button type="button" class="ajouter" data-tl="tournage">Mode tournage</button>';
+    }
+    h += "</div>";
+
+    if (!l) {
+      boite.innerHTML = h + '<div class="vide"><span class="grand">Aucune tier list.</span>Crée la première avec « + nouvelle ».</div>';
+      return;
+    }
+
+    if (tierEdition) {
+      h += '<div class="tl-edit">';
+      h += '<input type="text" id="tl-titre" data-garde="1" value="' + esc(l.titre) + '" aria-label="Titre de la tier list" maxlength="80">';
+      h += '<textarea id="tl-items" data-garde="1" aria-label="Éléments, un par ligne">' +
+           esc(l.items.map(function(x){ return x.t; }).join("\n")) + "</textarea>";
+      h += '<div class="tl-boutons"><button type="button" class="ajouter" data-tl="enregistrer">Enregistrer</button>' +
+           '<button type="button" class="lien-b" data-tl="annuler">Annuler</button>' +
+           '<span class="tl-espace"></span><button type="button" class="lien-b" data-tl="supprimer">Supprimer cette tier list</button></div>';
+      h += '<p class="tl-aide">Un élément par ligne. Un élément déjà classé garde son rang tant que tu ne changes pas son texte.</p>';
+      h += "</div>";
+    }
+
+    h += '<div class="tl-plateau">';
+    RANGS.forEach(function(r){
+      h += '<div class="tl-rang" style="--rg:' + r.c + '"><div class="tl-lettre">' + r.k + "</div>" +
+           '<div class="tl-zone" data-tl-zone="' + r.k + '">' +
+           l.rangs[r.k].map(function(id){ return htmlPuce(l, id); }).join("") + "</div></div>";
+    });
+    h += "</div>";
+
+    var reserve = l.items.filter(function(x){ return !rangDe(l, x.id); });
+    h += '<div class="tl-reserve tl-zone" data-tl-zone="">' +
+         '<span class="tl-etiq">À classer · ' + reserve.length + "</span>" +
+         reserve.map(function(x){ return htmlPuce(l, x.id); }).join("") + "</div>";
+    h += '<p class="tl-aide">Touche un élément puis touche un rang pour l\'y placer (sur ordinateur, tu peux aussi le glisser). ' +
+         "Touche la réserve pour le retirer. En mode tournage, les éléments arrivent un par un et on ne revient pas en arrière.</p>";
+
+    boite.innerHTML = h;
+  }
+
+  function tierClic(ev){
+    if (vue !== "tier") return;
+    var l = listeActive();
+    var b = ev.target.closest("[data-tl]");
+    if (b) {
+      var a = b.getAttribute("data-tl");
+      if (a === "nouvelle") {
+        var titre = window.prompt("Titre de la nouvelle tier list :", "Tier list des…");
+        if (!titre || !titre.trim()) return;
+        var n = nouvelleTier(titre.trim(), []);
+        tierlists.unshift(n);
+        tierActif = n.id;
+        ecritReglage(CLE_TIER + ".actif", n.id);
+        tierEdition = true;
+        enregistrerTier();
+      } else if (a === "modifier") {
+        tierEdition = !tierEdition;
+      } else if (a === "annuler") {
+        tierEdition = false;
+      } else if (a === "enregistrer" && l) {
+        var t = $("#tl-titre").value.trim();
+        var lignes = $("#tl-items").value.split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
+        var parTexte = {};
+        l.items.forEach(function(x){ if (!parTexte[x.t]) parTexte[x.t] = x; });
+        var vus = {};
+        l.items = lignes.filter(function(s){
+          if (vus[s]) return false;
+          vus[s] = 1; return true;
+        }).map(function(s){ return parTexte[s] || { id: nouvelId("e"), t: s }; });
+        if (t) l.titre = t;
+        var propre = propreTier(l);
+        l.rangs = propre.rangs;
+        tierEdition = false;
+        enregistrerTier();
+      } else if (a === "supprimer" && l) {
+        if (!window.confirm("Supprimer la tier list « " + l.titre + " » ?")) return;
+        tierlists = tierlists.filter(function(x){ return x.id !== l.id; });
+        tierActif = tierlists[0] ? tierlists[0].id : null;
+        tierEdition = false;
+        enregistrerTier();
+      } else if (a === "vider" && l) {
+        if (!window.confirm("Remettre tous les éléments de « " + l.titre + " » dans la réserve ?")) return;
+        l.rangs = rangsVides();
+        enregistrerTier();
+      } else if (a === "tournage" && l) {
+        ouvrirTournageTier(l);
+        return;
+      }
+      tierSel = null;
+      rendreListe();
+      return;
+    }
+
+    if (!l) return;
+    var p = ev.target.closest("[data-tl-puce]");
+    if (p) {
+      var id = p.getAttribute("data-tl-puce");
+      /* une puce touchée alors qu'une autre est en main : on pose l'autre à côté */
+      if (tierSel && tierSel !== id) {
+        var z0 = p.closest("[data-tl-zone]");
+        placer(l, tierSel, z0 ? z0.getAttribute("data-tl-zone") || null : null);
+        tierSel = null;
+        enregistrerTier();
+      } else {
+        tierSel = tierSel === id ? null : id;
+      }
+      rendreListe();
+      return;
+    }
+    var z = ev.target.closest("[data-tl-zone]");
+    if (z && tierSel) {
+      placer(l, tierSel, z.getAttribute("data-tl-zone") || null);
+      tierSel = null;
+      enregistrerTier();
+      rendreListe();
+    }
+  }
+
+  $("#liste").addEventListener("click", tierClic);
+
+  $("#liste").addEventListener("change", function(ev){
+    if (vue !== "tier" || ev.target.id !== "tl-choix") return;
+    tierActif = ev.target.value;
+    ecritReglage(CLE_TIER + ".actif", tierActif);
+    tierSel = null;
+    tierEdition = false;
+    rendreListe();
+  });
+
+  /* glisser-déposer à la souris (le tactile passe par le toucher-toucher ci-dessus) */
+  $("#liste").addEventListener("dragstart", function(ev){
+    var p = ev.target.closest && ev.target.closest("[data-tl-puce]");
+    if (!p) return;
+    try { ev.dataTransfer.setData("text/plain", p.getAttribute("data-tl-puce")); } catch (e) {}
+    ev.dataTransfer.effectAllowed = "move";
+  });
+  $("#liste").addEventListener("dragover", function(ev){
+    var z = ev.target.closest && ev.target.closest("[data-tl-zone]");
+    if (!z) return;
+    ev.preventDefault();
+    var avant = document.querySelector(".tl-zone.cible");
+    if (avant && avant !== z) avant.classList.remove("cible");
+    z.classList.add("cible");
+  });
+  $("#liste").addEventListener("dragleave", function(ev){
+    var z = ev.target.closest && ev.target.closest("[data-tl-zone]");
+    if (z && !z.contains(ev.relatedTarget)) z.classList.remove("cible");
+  });
+  $("#liste").addEventListener("drop", function(ev){
+    var z = ev.target.closest && ev.target.closest("[data-tl-zone]");
+    var l = listeActive();
+    if (!z || !l) return;
+    ev.preventDefault();
+    var id = "";
+    try { id = ev.dataTransfer.getData("text/plain"); } catch (e) {}
+    if (!id || !texteDe(l, id)) return;
+    placer(l, id, z.getAttribute("data-tl-zone") || null);
+    tierSel = null;
+    enregistrerTier();
+    rendreListe();
+  });
+
+  /* --- mode tournage : les éléments arrivent un par un, sans retour en arrière --- */
+
+  function melanger(t){
+    var a = t.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var x = a[i]; a[i] = a[j]; a[j] = x;
+    }
+    return a;
+  }
+
+  function ouvrirTournageTier(l){
+    var deja = RANGS.some(function(r){ return l.rangs[r.k].length; });
+    if (deja && !window.confirm("Le mode tournage repart de zéro : le classement actuel de « " + l.titre + " » sera effacé. Continuer ?")) return;
+    l.rangs = rangsVides();
+    enregistrerTier();
+    tierTour = { liste: l, ordre: melanger(l.items.map(function(x){ return x.id; })), i: 0, dernier: null };
+    $("#tlt").hidden = false;
+    $("#tlt").setAttribute("aria-hidden", "false");
+    rendreTournageTier();
+  }
+
+  function fermerTournageTier(){
+    if (!tierTour) return;
+    tierTour = null;
+    $("#tlt").hidden = true;
+    $("#tlt").setAttribute("aria-hidden", "true");
+    rendreListe();
+  }
+
+  function rendreTournageTier(){
+    var tt = tierTour;
+    if (!tt) return;
+    var l = tt.liste;
+    var h = '<h2 class="tlt-titre">' + esc(l.titre) + "</h2>";
+    h += '<div class="tlt-plateau">';
+    RANGS.forEach(function(r){
+      h += '<div class="tlt-rang" style="--rg:' + r.c + '"><div class="tl-lettre">' + r.k + "</div>" +
+           '<div class="tlt-zone" data-tlt-zone="' + r.k + '">' +
+           l.rangs[r.k].map(function(id){
+             return '<span class="tlt-puce' + (id === tt.dernier ? " neuve" : "") + '">' + esc(texteDe(l, id)) + "</span>";
+           }).join("") + "</div></div>";
+    });
+    h += "</div>";
+    if (tt.i < tt.ordre.length) {
+      h += '<div class="tlt-carte"><span class="tlt-compte">' + (tt.i + 1) + " / " + tt.ordre.length + "</span>" +
+           '<span class="tlt-element">' + esc(texteDe(l, tt.ordre[tt.i])) + "</span></div>";
+    } else {
+      h += '<div class="tlt-carte fin"><span class="tlt-element">Et toi, tu changes quoi ?</span></div>';
+    }
+    h += '<div class="tlt-barre"><button type="button" class="t-b" data-tlt="recommencer">Recommencer</button>' +
+         '<button type="button" class="t-b" data-tlt="fermer">Fermer</button></div>';
+    $("#tlt").innerHTML = h;
+  }
+
+  $("#tlt").addEventListener("click", function(ev){
+    var tt = tierTour;
+    if (!tt) return;
+    var b = ev.target.closest("[data-tlt]");
+    if (b) {
+      if (b.getAttribute("data-tlt") === "fermer") { fermerTournageTier(); return; }
+      tt.liste.rangs = rangsVides();
+      enregistrerTier();
+      tt.ordre = melanger(tt.ordre);
+      tt.i = 0;
+      tt.dernier = null;
+      rendreTournageTier();
+      return;
+    }
+    var z = ev.target.closest("[data-tlt-zone]");
+    if (!z || tt.i >= tt.ordre.length) return;
+    var id = tt.ordre[tt.i];
+    placer(tt.liste, id, z.getAttribute("data-tlt-zone"));
+    tt.dernier = id;
+    tt.i++;
+    enregistrerTier();
+    rendreTournageTier();
+  });
+
+  document.addEventListener("keydown", function(ev){
+    if (tierTour && ev.key === "Escape") fermerTournageTier();
+  });
+
   /* ============ Ascension Maths : idées de vidéos ============ */
 
   function chargerIdees(){
@@ -3907,6 +4403,15 @@ ul.taches.tournees{ opacity: .72; }
         if (Array.isArray(v.cours)) cours = v.cours;
         ecritReglage(CLE_COURS, JSON.stringify(cours));
       }
+    },
+    tierlists: {
+      lire: function(){ return { listes: tierlists }; },
+      ecrire: function(v){
+        if (!Array.isArray(v.listes)) return;
+        tierlists = v.listes.map(propreTier).filter(Boolean);
+        if (!tierlists.some(function(l){ return l.id === tierActif; })) tierActif = tierlists[0] ? tierlists[0].id : null;
+        ecritReglage(CLE_TIER, JSON.stringify({ listes: tierlists }));
+      }
     }
   };
 
@@ -4239,6 +4744,7 @@ ul.taches.tournees{ opacity: .72; }
       idees: idees,
       rubriques: rubriques,
       catsVideo: catsVideo,
+      tierlists: tierlists,
       taches: taches
     }, null, 2);
   }
@@ -4393,6 +4899,12 @@ ul.taches.tournees{ opacity: .72; }
         enregistrerIdees();
       }
 
+      if (Array.isArray(brut.tierlists)) {
+        tierlists = brut.tierlists.map(propreTier).filter(Boolean);
+        tierActif = tierlists[0] ? tierlists[0].id : null;
+        enregistrerTier();
+      }
+
       if (Array.isArray(brut.cours)) {
         cours = brut.cours.filter(function(c){
           return c && typeof c.titre === "string" && /^\d{4}-\d{2}-\d{2}$/.test(c.date);
@@ -4438,6 +4950,7 @@ ul.taches.tournees{ opacity: .72; }
   localCharger();
   chargerCours();
   chargerIdees();
+  chargerTier();
   chargerTournees();
   rendre(true);
   majNoteSauvegarde();
