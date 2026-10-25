@@ -1412,37 +1412,37 @@ ul.taches.tournees{ opacity: .72; }
 @keyframes tlt-pose{ from{ transform: scale(1.35); background: #3A4566; } to{ transform: none; } }
 .tlt-carte{
   flex: none; text-align: center;
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
   background: #F2F4F9; color: #0B0D11;
-  border-radius: 12px; padding: 12px 14px 14px;
+  border-radius: 12px; padding: 8px 12px 10px;
 }
 .tlt-carte[data-glisse]{ cursor: grab; }
 .tlt-compte{
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 12px; letter-spacing: .08em; color: #5B6376;
 }
-.tlt-image{ max-height: 24vh; max-width: 100%; object-fit: contain; border-radius: 8px; background: #fff; }
-.tlt-element{ font-size: clamp(24px, 7vw, 42px); font-weight: 800; line-height: 1.15; overflow-wrap: anywhere; }
-.tlt-element.glyphe{ font-family: "Newsreader", Georgia, serif; font-size: clamp(64px, 20vw, 120px); line-height: 1; }
+.tlt-image{ max-height: 11vh; max-width: 60%; object-fit: contain; border-radius: 8px; background: #fff; }
+.tlt-element{ font-size: clamp(20px, 5.5vw, 34px); font-weight: 800; line-height: 1.15; overflow-wrap: anywhere; }
+.tlt-element.glyphe{ font-family: "Newsreader", Georgia, serif; font-size: clamp(44px, 12vw, 72px); line-height: 1; }
 .tlt-carte.fin{ background: #171B23; color: #F2F4F9; }
 .tlt-plateau-bas{
-  flex: none; max-height: 32vh; overflow-y: auto;
-  display: flex; flex-wrap: wrap; justify-content: center; gap: 7px;
-  padding: 8px; border-radius: 10px; border: 1px dashed #343B4B;
+  flex: none; max-height: 19vh; overflow-y: auto;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 5px;
+  padding: 6px; border-radius: 10px; border: 1px dashed #343B4B;
 }
 .tlt-tuile{
-  width: clamp(76px, 22vw, 116px);
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  background: #F2F4F9; color: #0B0D11; border-radius: 9px; padding: 5px;
+  width: clamp(54px, 15vw, 80px);
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: #F2F4F9; color: #0B0D11; border-radius: 8px; padding: 3px;
   cursor: grab;
 }
-.tlt-tuile-img{ width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; background: #fff; }
+.tlt-tuile-img{ width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 5px; background: #fff; }
 .tlt-tuile-glyphe{
-  width: 100%; aspect-ratio: 4 / 3; display: flex; align-items: center; justify-content: center;
-  font-family: "Newsreader", Georgia, serif; font-size: clamp(30px, 9vw, 52px); font-weight: 600;
+  width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-family: "Newsreader", Georgia, serif; font-size: clamp(22px, 6vw, 36px); font-weight: 600;
   background: #E2E7F0; border-radius: 6px;
 }
-.tlt-tuile-nom{ font-size: clamp(10.5px, 2.9vw, 14px); font-weight: 700; text-align: center; line-height: 1.2; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; max-width: 100%; }
+.tlt-tuile-nom{ font-size: clamp(9.5px, 2.5vw, 12px); font-weight: 700; text-align: center; line-height: 1.2; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; max-width: 100%; }
 .tlt-barre{ flex: none; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 .tlt-barre .t-b{ padding: 8px 14px; font-size: 14px; }
 </style>
@@ -3762,7 +3762,7 @@ ul.taches.tournees{ opacity: .72; }
 
   function htmlImg(x, cls){
     var src = illusDe(x);
-    return src ? '<img class="' + cls + '" src="' + esc(src) + '" alt="" draggable="false" loading="lazy">' : "";
+    return src ? '<img class="' + cls + '" src="' + esc(src) + '" alt="" draggable="false">' : "";
   }
 
   /* k = lettre du rang, ou null pour renvoyer l'élément dans la réserve */
@@ -4083,6 +4083,8 @@ ul.taches.tournees{ opacity: .72; }
     if (deja && !window.confirm("Le mode tournage repart de zéro : le classement actuel de « " + l.titre + " » sera effacé. Continuer ?")) return;
     l.rangs = rangsVides();
     enregistrerTier();
+    /* on charge toutes les images d'emblée, pour qu'aucune case ne reste blanche à l'écran */
+    l.items.forEach(function(x){ var src = illusDe(x); if (src) { var im = new Image(); im.src = src; } });
     tierTour = { liste: l, mode: mode, ordre: melanger(l.items.map(function(x){ return x.id; })),
                  i: 0, dernier: null, sel: null };
     $("#tlt").hidden = false;
