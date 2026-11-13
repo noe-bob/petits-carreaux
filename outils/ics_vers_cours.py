@@ -128,7 +128,9 @@ def convertir(texte):
     return cours, repetitions
 
 
-MOTIF_MINES = re.compile(r"[ée]cole des mines", re.I)
+# « Ecole des Mines » en toutes lettres, ou son sigle (les rattrapages disent « EMSE »)
+MOTIF_MINES = re.compile(r"[ée]cole des mines|\bEMSE\b", re.I)
+MOTIF_RATTRAPAGE = re.compile(r"seconde chance|rattrapage", re.I)
 DEBUT_EXAMEN = re.compile(
     r"^(contr[ôo]le( terminal| continu)?|cc\s*\d*|r[ée]gime terminal|seconde chance|\+)\s*", re.I)
 
@@ -147,13 +149,14 @@ def matiere_l3(titre):
 
 def examens_l3(texte):
     """Du calendrier de la L3 de maths, seulement les examens passés au titre
-    de l'École des Mines (« … + Ecole des Mines … » dans l'intitulé)."""
+    de l'École des Mines (« Ecole des Mines » ou « EMSE » dans l'intitulé)."""
     cours, _ = convertir(texte)
     garde = []
     for c in cours:
         if not MOTIF_MINES.search(c["titre"]):
             continue
-        titre = "Examen L3 Maths - " + matiere_l3(c["titre"])
+        genre = "Rattrapage" if MOTIF_RATTRAPAGE.search(c["titre"]) else "Examen"
+        titre = genre + " L3 Maths - " + matiere_l3(c["titre"])
         garde.append(dict(c, id="%s %s %s" % (c["date"], c["debut"] or "jour", titre),
                           titre=titre, source="l3"))
     return garde

@@ -2708,7 +2708,8 @@ ul.taches.tournees{ opacity: .72; }
       if (!estPartiel(c)) return;
       l.push({ id: c.id, date: c.date, debut: c.debut || null, duree: c.duree || null,
                lieu: c.lieu || "", matiere: matierePartiel(c.titre),
-               genre: c.source === "l3" ? "L3 maths" : genrePartiel(c.titre) });
+               genre: c.source === "l3" ? "L3 maths" + (/^rattrapage/i.test(c.titre) ? " · rattrapage" : "")
+                                      : genrePartiel(c.titre) });
     });
     taches.forEach(function(t){
       if (!t.echeance || !estTachePartiel(t)) return;
