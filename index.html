@@ -921,6 +921,116 @@ ul.etapes{ list-style: none; margin: 0 0 6px; padding: 0; display: flex; flex-di
 
 .badge.rattache-b{ color: var(--encre-3); }
 
+/* ---------- partiels ---------- */
+.case-jour.partiel .num{ box-shadow: inset 0 0 0 1.5px var(--rouge); color: var(--rouge); font-weight: 700; }
+.case-jour.partiel.auj .num{ background: var(--rouge); color: var(--sur-accent); box-shadow: none; }
+.partiel-mois{
+  font-size: 10.5px; line-height: 1.3; font-weight: 600;
+  color: var(--rouge);
+  background: var(--rouge-doux);
+  border-radius: 3px;
+  padding: 1px 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+@media (max-width: 620px){ .partiel-mois{ display: none; } }
+.bloc-cours.partiel, .tj.cours.partiel{
+  background: var(--rouge-doux);
+  border-left-color: var(--rouge);
+  color: var(--encre);
+  font-weight: 600;
+}
+.bloc-cours.partiel .ch{ color: var(--rouge); }
+.cours-l.partiel .n{ color: var(--rouge); font-weight: 600; }
+
+.pa-resume{
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 11px;
+  background: var(--surface);
+  border: 1px solid var(--ligne);
+  border-left: 3px solid var(--rouge);
+  border-radius: var(--r);
+  box-shadow: var(--ombre);
+  padding: 11px 14px;
+  margin-bottom: 18px;
+}
+.pa-resume .k{
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--encre-3);
+}
+.pa-resume strong{ font-family: "Newsreader", Georgia, serif; font-size: 18px; font-weight: 600; }
+.pa-resume .quand{ color: var(--rouge); font-weight: 600; font-size: 13.5px; }
+.pa-resume .reste{
+  flex-basis: 100%;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px; color: var(--encre-3);
+}
+.pa-mois{ margin-top: 6px; }
+.pa-liste{ display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.pa-ecart{
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px; color: var(--encre-3);
+  padding-left: 58px;
+  margin: -2px 0;
+}
+.pa-l{
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  gap: 0 12px;
+  align-items: start;
+  background: var(--surface);
+  border: 1px solid var(--ligne);
+  border-radius: var(--r);
+  padding: 8px 11px 8px 8px;
+}
+.pa-l.proche{ border-left: 3px solid var(--rouge); padding-left: 6px; }
+.pa-l.passe{ opacity: .6; }
+.pa-date{
+  display: flex; flex-direction: column; align-items: center;
+  background: var(--surface-2);
+  border-radius: 7px;
+  padding: 3px 0 4px;
+  line-height: 1.15;
+}
+.pa-date:hover{ background: var(--accent-doux); }
+.pa-date .j{ font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.pa-date .js{
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 9px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--encre-3);
+}
+.pa-corps{ min-width: 0; padding-top: 2px; }
+.pa-m{ font-weight: 600; font-size: 14.5px; line-height: 1.3; }
+.pa-meta{
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 9px;
+  margin-top: 3px;
+  font-size: 12px; color: var(--encre-2);
+}
+.pa-meta .h{ font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11px; font-variant-numeric: tabular-nums; }
+.pa-meta .lieu{
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px; font-weight: 600; color: var(--encre);
+  background: var(--surface-2);
+  border: 1px solid var(--ligne);
+  border-radius: 4px;
+  padding: 0 6px;
+}
+.pa-nrev{ color: var(--vert); font-weight: 600; }
+.pa-rev{ color: var(--accent); font-size: 12px; padding: 0; }
+.pa-rev:hover{ text-decoration: underline; }
+.pa-cpt{
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  padding: 2px 8px;
+  margin-top: 2px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--encre-2);
+}
+.pa-l.proche .pa-cpt{ background: var(--rouge-doux); color: var(--rouge); }
+.pa-l.bientot .pa-cpt{ background: color-mix(in srgb, var(--ambre) 13%, var(--surface)); color: var(--ambre); }
+.pa-rv{ grid-column: 2 / -1; margin: 6px 0 0; }
+
 /* ---------- ecran de connexion ---------- */
 .voile{
   position: fixed;
@@ -1678,7 +1788,8 @@ ul.taches.tournees{ opacity: .72; }
   var sansDateOuvert = litReglage(CLE_SANS) !== "0";
   var renduEnAttente = false;
   var glisse = null;
-  var modeAgenda = litReglage(CLE_MODE) === "semaine" ? "semaine" : "mois";
+  var modeAgenda = (function(m){ return (m === "semaine" || m === "partiels") ? m : "mois"; })(litReglage(CLE_MODE));
+  var partielsPassesOuverts = false;
   var curseur = null;   /* jour d'ancrage du mois / de la semaine affichés */
   var jourSel = null;   /* jour sélectionné dans l'agenda */
   var cours = [];       /* créneaux importés depuis un .ics — du décor, pas des tâches */
@@ -1715,6 +1826,7 @@ ul.taches.tournees{ opacity: .72; }
 
   var fmtMois     = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric" });
   var fmtJourMois = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" });
+  var fmtMoisCourt= new Intl.DateTimeFormat("fr-FR", { month: "short" });
   var fmtJourPlein= new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" });
 
   function lundi(s){ var d = deIso(s); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return iso(d); }
@@ -2362,10 +2474,13 @@ ul.taches.tournees{ opacity: .72; }
 
     for (var i = 0; i < 42; i++) {
       var jd = deIso(d);
-      var cls = "case-jour" + (memeMois(d, premier) ? "" : " hors") + (d === t ? " auj" : "") + (d === jourSel ? " sel" : "");
+      var pj = partielsDuJour(d);
+      var cls = "case-jour" + (memeMois(d, premier) ? "" : " hors") + (d === t ? " auj" : "") + (d === jourSel ? " sel" : "") +
+                (pj.length ? " partiel" : "");
       h += '<button type="button" class="' + cls + '" data-jour="' + d + '">';
       h += '<span class="num">' + jd.getDate() + "</span>";
       var items = carte[d] || [];
+      pj.forEach(function(c){ h += '<span class="partiel-mois">' + esc(matierePartiel(c.titre)) + "</span>"; });
       h += '<span class="puces">';
       items.slice(0, 3).forEach(function(x){ h += htmlPuce(x); });
       if (items.length > 3) h += '<span class="plus">+' + (items.length - 3) + "</span>";
@@ -2433,7 +2548,7 @@ ul.taches.tournees{ opacity: .72; }
       h += '<div class="tj-cell">';
       coursDuJour(j).forEach(function(c){
         if (c.debut) return;
-        h += '<span class="tj cours">' + esc(c.titre) +
+        h += '<span class="tj cours' + (estPartiel(c) ? " partiel" : "") + '">' + esc(c.titre) +
              (c.lieu ? ' <b class="tj-salle">' + esc(c.lieu) + "</b>" : "") + "</span>";
       });
       (carte[j] || []).filter(function(x){ return !x.heure; }).forEach(function(x){
@@ -2468,7 +2583,7 @@ ul.taches.tournees{ opacity: .72; }
         if (!c.debut) return;
         var haut0 = ((enMinutes(c.debut) - minH * 60) / 60) * hpx;
         var haut1 = Math.max(17, ((c.duree || 60) / 60) * hpx - 2);
-        h += '<div class="bloc-cours" style="top:' + haut0.toFixed(1) + "px;height:" + haut1.toFixed(1) + 'px" title="' +
+        h += '<div class="bloc-cours' + (estPartiel(c) ? " partiel" : "") + '" style="top:' + haut0.toFixed(1) + "px;height:" + haut1.toFixed(1) + 'px" title="' +
              esc(c.titre + (c.lieu ? " — " + c.lieu : "")) + '">' +
              '<span class="ch">' + esc(libelleCreneau(c.debut, c.duree)) + "</span>" +
              (c.lieu ? '<span class="cs">' + esc(c.lieu) + "</span>" : "") +
@@ -2519,7 +2634,7 @@ ul.taches.tournees{ opacity: .72; }
     if (cj.length) {
       h += '<div class="cours-jour">';
       cj.forEach(function(c){
-        h += '<div class="cours-l">';
+        h += '<div class="cours-l' + (estPartiel(c) ? " partiel" : "") + '">';
         h += '<span class="h">' + (c.debut ? esc(libelleCreneau(c.debut, c.duree, true)) : "journée") + "</span>";
         h += '<span class="n">' + esc(c.titre) + "</span>";
         if (c.lieu) h += '<span class="lieu">' + esc(c.lieu) + "</span>";
@@ -2562,6 +2677,148 @@ ul.taches.tournees{ opacity: .72; }
     return h + "</section>";
   }
 
+  /* ============ partiels ============ */
+
+  /* Les partiels viennent tout seuls de l'emploi du temps : Prométhée les intitule
+     « Examen écrit ICM 1A - <matière> ». Une tâche de catégorie « Partiel » ou
+     « Examen » s'y ajoute, pour un contrôle que Prométhée ne connaît pas. */
+  function estPartiel(c){
+    var s = String(c && c.titre || "");
+    return /\b(examen|partiel|rattrapage|soutenance)/i.test(s) || /\bDS\b/.test(s);
+  }
+  function estTachePartiel(t){
+    return /^(partiels?|examens?|ds)$/i.test(String(t.categorie || "").trim());
+  }
+  function matierePartiel(titre){
+    var s = String(titre || ""), i = s.lastIndexOf(" - ");
+    return i >= 0 ? s.slice(i + 3).trim() : s;
+  }
+  function genrePartiel(titre){
+    var s = String(titre || "").toLowerCase();
+    if (s.indexOf("rattrapage") >= 0) return "rattrapage";
+    if (/oral|soutenance/.test(s)) return "oral";
+    if (/[ée]crit/.test(s)) return "écrit";
+    return "";
+  }
+  function partielsDuJour(date){ return coursDuJour(date).filter(estPartiel); }
+
+  function listePartiels(){
+    var l = [];
+    cours.forEach(function(c){
+      if (!estPartiel(c)) return;
+      l.push({ id: c.id, date: c.date, debut: c.debut || null, duree: c.duree || null,
+               lieu: c.lieu || "", matiere: matierePartiel(c.titre), genre: genrePartiel(c.titre) });
+    });
+    taches.forEach(function(t){
+      if (!t.echeance || !estTachePartiel(t)) return;
+      l.push({ id: t.id, date: t.echeance, debut: t.heure || null, duree: t.duree || null,
+               lieu: "", matiere: t.titre, genre: "", main: true });
+    });
+    return l.sort(function(a, b){
+      var x = a.date + (a.debut || ""), y = b.date + (b.debut || "");
+      return x < y ? -1 : (x > y ? 1 : 0);
+    });
+  }
+
+  function joursAvant(date){ return Math.round((deIso(date) - deIso(auj())) / 86400000); }
+  function libelleDans(n){
+    if (n === 0) return "aujourd'hui";
+    if (n === 1) return "demain";
+    if (n < 0) return "il y a " + (-n) + " j";
+    return "dans " + n + " jours";
+  }
+
+  function htmlLignePartiel(p){
+    var n = joursAvant(p.date), jd = deIso(p.date);
+    var cls = "pa-l" + (n < 0 ? " passe" : (n <= 7 ? " proche" : (n <= 21 ? " bientot" : "")));
+    var revs = taches.filter(function(t){ return t.cours === p.id; });
+    var faites = revs.filter(function(t){ return t.faite; }).length;
+
+    var h = '<div class="' + cls + '">';
+    h += '<button type="button" class="pa-date" data-voir-jour="' + p.date + '" aria-label="Voir ce jour dans le mois">' +
+         '<span class="js">' + fmtCourt.format(jd).split(" ")[0].replace(".", "") + "</span>" +
+         '<span class="j">' + jd.getDate() + "</span>" +
+         '<span class="js">' + fmtMoisCourt.format(jd).replace(".", "") + "</span></button>";
+    h += '<div class="pa-corps"><div class="pa-m">' + esc(p.matiere) + "</div>";
+    h += '<div class="pa-meta">';
+    if (p.debut) h += '<span class="h">' + esc(libelleCreneau(p.debut, p.duree, true)) + "</span>";
+    if (p.lieu) h += '<span class="lieu">' + esc(p.lieu) + "</span>";
+    if (p.genre) h += "<span>" + p.genre + "</span>";
+    if (p.main) h += "<span>ajouté à la main</span>";
+    if (revs.length) h += '<span class="pa-nrev">' + faites + "/" + revs.length + " révision" + (revs.length > 1 ? "s" : "") + "</span>";
+    if (n >= 0) h += '<button type="button" class="pa-rev" data-revision="' + esc(p.id) + '">+ révision</button>';
+    h += "</div></div>";
+    h += '<span class="pa-cpt">' + (n < 0 ? "passé" : (n === 0 ? "auj." : "J-" + n)) + "</span>";
+    if (revs.length && n >= 0) {
+      h += '<ul class="taches pa-rv">' + trier(revs).map(function(t){ return htmlTache(t, true); }).join("") + "</ul>";
+    }
+    return h + "</div>";
+  }
+
+  function htmlPartiels(){
+    var l = listePartiels(), t = auj();
+    if (!l.length) {
+      return '<div class="vide">Aucun partiel pour l\'instant.<br>Ceux de Prométhée (« Examen écrit… ») apparaîtront ici tout seuls. ' +
+             'Pour en ajouter un à la main, crée une tâche datée dans la catégorie <b>Partiel</b>.</div>';
+    }
+    var avenir = l.filter(function(p){ return p.date >= t; });
+    var passes = l.filter(function(p){ return p.date < t; });
+    var h = "";
+
+    if (avenir.length) {
+      var p0 = avenir[0], n0 = joursAvant(p0.date);
+      var semaine = avenir.filter(function(p){ return joursAvant(p.date) <= 7; }).length;
+      h += '<div class="pa-resume"><span class="k">Prochain</span><strong>' + esc(p0.matiere) + "</strong>" +
+           '<span class="quand">' + libelleDans(n0) + "</span>" +
+           '<span class="reste">' + avenir.length + " à venir" +
+           (semaine > 1 ? " · " + semaine + " cette semaine" : "") +
+           " · dernier le " + fmtJourMois.format(deIso(avenir[avenir.length - 1].date)).replace(".", "") + "</span></div>";
+    } else {
+      h += '<div class="pa-resume"><span class="k">Terminé</span><strong>Plus aucun partiel à venir</strong></div>';
+    }
+
+    var moisCourant = "", prec = null;
+    avenir.forEach(function(p){
+      var m = p.date.slice(0, 7);
+      if (m !== moisCourant) {
+        if (moisCourant) h += "</div>";
+        moisCourant = m;
+        h += '<div class="pj-tete pa-mois"><h2>' + majuscule(fmtMois.format(deIso(p.date))) + '</h2><span class="trait"></span></div>';
+        h += '<div class="pa-liste">';
+      } else if (prec) {
+        var e = Math.round((deIso(p.date) - deIso(prec.date)) / 86400000);
+        h += '<div class="pa-ecart">' + (e === 0 ? "même jour" : (e === 1 ? "le lendemain" : e + " jours plus tard")) + "</div>";
+      }
+      h += htmlLignePartiel(p);
+      prec = p;
+    });
+    if (moisCourant) h += "</div>";
+
+    if (passes.length) {
+      h += '<section class="groupe" style="margin-top:18px"><div class="groupe-tete">' +
+           '<button type="button" class="replier" data-pa-passes="1" aria-expanded="' + partielsPassesOuverts + '">' +
+           "<h2>Déjà passés</h2>" + '<span class="cnt">' + passes.length + "</span></button>" +
+           '<span class="trait"></span></div>';
+      if (partielsPassesOuverts) {
+        h += '<div class="pa-liste">' + passes.slice().reverse().map(htmlLignePartiel).join("") + "</div>";
+      }
+      h += "</section>";
+    }
+    return h;
+  }
+
+  function demanderRevision(id){
+    var l = listePartiels(), p = null;
+    for (var i = 0; i < l.length; i++) if (l[i].id === id) { p = l[i]; break; }
+    if (!p) return;
+    /* pas de date imposée : réviser le jour du partiel n'aurait pas de sens */
+    rattachement = { uid: p.id, nom: "Partiel " + p.matiere, date: null };
+    majRattachement();
+    $("#c-date").value = "";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    $("#saisie").focus();
+  }
+
   function rendreAgenda(boite, fk){
     var t = auj();
     if (!curseur) curseur = t;
@@ -2569,19 +2826,26 @@ ul.taches.tournees{ opacity: .72; }
     var carte = carteJours();
     var etroit = window.matchMedia("(max-width: 720px)").matches;
 
-    var h = '<div class="agenda-tete">';
-    h += '<button type="button" class="nav-b" data-nav="-1" aria-label="Période précédente">' + fleche(-1) + "</button>";
-    h += '<button type="button" class="nav-b" data-nav="1" aria-label="Période suivante">' + fleche(1) + "</button>";
-    h += '<span class="periode">' + (modeAgenda === "mois" ? majuscule(fmtMois.format(deIso(curseur))) : titreSemaine()) + "</span>";
-    h += '<button type="button" class="auj-b" data-nav="0">Aujourd\'hui</button>';
-    h += '<span class="bascule">' +
+    var bascule = '<span class="bascule">' +
          '<button type="button" data-mode="mois" aria-pressed="' + (modeAgenda === "mois") + '">Mois</button>' +
-         '<button type="button" data-mode="semaine" aria-pressed="' + (modeAgenda === "semaine") + '">Semaine</button></span>';
-    h += "</div>";
+         '<button type="button" data-mode="semaine" aria-pressed="' + (modeAgenda === "semaine") + '">Semaine</button>' +
+         '<button type="button" data-mode="partiels" aria-pressed="' + (modeAgenda === "partiels") + '">Partiels</button></span>';
 
-    h += modeAgenda === "mois" ? htmlMois(carte) : htmlSemaine(carte, etroit);
-    h += htmlPanneauJour(carte);
-    h += htmlSansDate();
+    var h = '<div class="agenda-tete">';
+    if (modeAgenda === "partiels") {
+      h += '<span class="periode">Partiels</span>' + bascule + "</div>";
+      h += htmlPartiels();
+    } else {
+      h += '<button type="button" class="nav-b" data-nav="-1" aria-label="Période précédente">' + fleche(-1) + "</button>";
+      h += '<button type="button" class="nav-b" data-nav="1" aria-label="Période suivante">' + fleche(1) + "</button>";
+      h += '<span class="periode">' + (modeAgenda === "mois" ? majuscule(fmtMois.format(deIso(curseur))) : titreSemaine()) + "</span>";
+      h += '<button type="button" class="auj-b" data-nav="0">Aujourd\'hui</button>';
+      h += bascule + "</div>";
+
+      h += modeAgenda === "mois" ? htmlMois(carte) : htmlSemaine(carte, etroit);
+      h += htmlPanneauJour(carte);
+      h += htmlSansDate();
+    }
 
     boite.innerHTML = h;
     if (fk) {
@@ -2807,6 +3071,23 @@ ul.taches.tournees{ opacity: .72; }
     }
 
     /* --- agenda --- */
+    var vj = cible.closest("[data-voir-jour]");
+    if (vj) {
+      curseur = jourSel = vj.getAttribute("data-voir-jour");
+      modeAgenda = "mois";
+      ecritReglage(CLE_MODE, modeAgenda);
+      rendre(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    var rv = cible.closest("[data-revision]");
+    if (rv) { demanderRevision(rv.getAttribute("data-revision")); return; }
+    if (cible.closest("[data-pa-passes]")) {
+      partielsPassesOuverts = !partielsPassesOuverts;
+      rendre(true);
+      return;
+    }
+
     var nav = cible.closest("[data-nav]");
     if (nav) { navAgenda(+nav.getAttribute("data-nav")); return; }
 
@@ -3266,7 +3547,7 @@ ul.taches.tournees{ opacity: .72; }
     var heure = a.heure || $("#c-heure").value || null;
     var date = a.echeance || $("#c-date").value || null;
     /* sur l'agenda, une tâche sans date va sur le jour affiché — sinon elle serait invisible */
-    var defaut = (vue === "agenda" && jourSel) ? jourSel : null;
+    var defaut = (vue === "agenda" && jourSel && modeAgenda !== "partiels") ? jourSel : null;
 
     ajouter({
       titre: a.titre,
