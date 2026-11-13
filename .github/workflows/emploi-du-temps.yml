@@ -48,6 +48,7 @@ jobs:
         working-directory: outils
         env:
           CALENDRIER_URL: ${{ secrets.CALENDRIER_URL }}
+          CALENDRIER_L3_URL: ${{ secrets.CALENDRIER_L3_URL }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           APP_COURRIEL: ${{ secrets.APP_COURRIEL }}

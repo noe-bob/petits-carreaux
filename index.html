@@ -2707,7 +2707,8 @@ ul.taches.tournees{ opacity: .72; }
     cours.forEach(function(c){
       if (!estPartiel(c)) return;
       l.push({ id: c.id, date: c.date, debut: c.debut || null, duree: c.duree || null,
-               lieu: c.lieu || "", matiere: matierePartiel(c.titre), genre: genrePartiel(c.titre) });
+               lieu: c.lieu || "", matiere: matierePartiel(c.titre),
+               genre: c.source === "l3" ? "L3 maths" : genrePartiel(c.titre) });
     });
     taches.forEach(function(t){
       if (!t.echeance || !estTachePartiel(t)) return;
@@ -3775,7 +3776,8 @@ ul.taches.tournees{ opacity: .72; }
             "Remplacer l'emploi du temps actuel (" + cours.length + " créneaux) par les " +
             lus.length + " créneaux de ce fichier ?")) return;
 
-      cours = lus;
+      /* les examens de la L3 viennent d'un autre calendrier : un import manuel ne les efface pas */
+      cours = lus.concat(cours.filter(function(c){ return c.source === "l3"; }));
       localEnregistrerCours();
       rendre(true);
       majNoteEdt();

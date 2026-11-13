@@ -12,6 +12,12 @@ import re
 import sys
 from datetime import datetime, timedelta, timezone
 
+try:
+    from zoneinfo import ZoneInfo
+    PARIS = ZoneInfo("Europe/Paris")
+except Exception:  # pas de base de fuseaux : on retombe sur l'heure de la machine
+    PARIS = None
+
 MOTIF_DATE = re.compile(r"^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?(Z)?)?")
 
 
@@ -42,8 +48,9 @@ def dedate(valeur):
     if not h:
         return ("%s-%s-%s" % (a, mo, j), None)
     if z == "Z":
+        # l'heure de Paris, pas celle de la machine : la tâche GitHub tourne en UTC
         t = datetime(int(a), int(mo), int(j), int(h), int(mi),
-                     tzinfo=timezone.utc).astimezone()
+                     tzinfo=timezone.utc).astimezone(PARIS)
         return (t.strftime("%Y-%m-%d"), t.strftime("%H:%M"))
     return ("%s-%s-%s" % (a, mo, j), "%s:%s" % (h, mi))
 
@@ -119,6 +126,37 @@ def convertir(texte):
 
     cours.sort(key=lambda c: (c["date"], c["debut"] or ""))
     return cours, repetitions
+
+
+MOTIF_MINES = re.compile(r"[ée]cole des mines", re.I)
+DEBUT_EXAMEN = re.compile(
+    r"^(contr[ôo]le( terminal| continu)?|cc\s*\d*|r[ée]gime terminal|seconde chance|\+)\s*", re.I)
+
+
+def matiere_l3(titre):
+    """« CC2 + Régime Terminal Algèbre (FST +Ecole des Mines) » → « Algèbre »."""
+    s = re.sub(r"\([^)]*\)", " ", titre)
+    s = re.sub(r"\s+", " ", s).strip()
+    avant = None
+    while s != avant:
+        avant = s
+        s = DEBUT_EXAMEN.sub("", s).strip()
+    s = re.sub(r"\s*\+\s*r[ée]gime terminal$", "", s, flags=re.I).strip()
+    return s or titre
+
+
+def examens_l3(texte):
+    """Du calendrier de la L3 de maths, seulement les examens passés au titre
+    de l'École des Mines (« … + Ecole des Mines … » dans l'intitulé)."""
+    cours, _ = convertir(texte)
+    garde = []
+    for c in cours:
+        if not MOTIF_MINES.search(c["titre"]):
+            continue
+        titre = "Examen L3 Maths - " + matiere_l3(c["titre"])
+        garde.append(dict(c, id="%s %s %s" % (c["date"], c["debut"] or "jour", titre),
+                          titre=titre, source="l3"))
+    return garde
 
 
 def main():

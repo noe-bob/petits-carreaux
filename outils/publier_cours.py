@@ -2,6 +2,8 @@
 
 Attend dans l'environnement :
     CALENDRIER_URL   lien iCal (secret)
+    CALENDRIER_L3_URL  lien iCal de la L3 de maths (secret, facultatif) :
+                       seuls ses examens « + Ecole des Mines » sont gardés
     SUPABASE_URL     adresse du projet
     SUPABASE_ANON_KEY  clé publiable
     APP_COURRIEL     compte de l'application
@@ -17,7 +19,7 @@ import sys
 import urllib.error
 import urllib.request
 
-from ics_vers_cours import convertir
+from ics_vers_cours import convertir, examens_l3
 
 
 def obligatoire(nom):
@@ -43,6 +45,13 @@ def http(url, donnees=None, entetes=None, methode=None):
         return e.code, e.read().decode("utf-8", "replace")
 
 
+def telecharger(lien):
+    demande = urllib.request.Request(lien, headers={
+        "User-Agent": "petits-carreaux/1.0", "Accept": "text/calendar, */*"})
+    with urllib.request.urlopen(demande, timeout=60) as rep:
+        return rep.read().decode("utf-8", "replace")
+
+
 def main():
     lien = obligatoire("CALENDRIER_URL")
     base = obligatoire("SUPABASE_URL").rstrip("/")
@@ -51,10 +60,7 @@ def main():
     mdp = obligatoire("APP_MOTDEPASSE")
 
     # 1. le calendrier
-    demande = urllib.request.Request(lien, headers={
-        "User-Agent": "petits-carreaux/1.0", "Accept": "text/calendar, */*"})
-    with urllib.request.urlopen(demande, timeout=60) as rep:
-        texte = rep.read().decode("utf-8", "replace")
+    texte = telecharger(lien)
 
     if "BEGIN:VEVENT" not in texte:
         sys.exit("Le lien ne renvoie pas un calendrier (page de connexion ?).")
@@ -70,6 +76,22 @@ def main():
           % (len(cours), cours[0]["date"], cours[-1]["date"],
              sum(1 for c in cours if c["lieu"])))
 
+    # 1 bis. les examens de la L3 de maths, s'il y a un lien.
+    #   Le serveur de la fac peut tomber : on ne veut ni bloquer Prométhée,
+    #   ni effacer les examens déjà connus. None = « reprendre ceux de la base ».
+    l3 = []
+    lien_l3 = os.environ.get("CALENDRIER_L3_URL", "").strip()
+    if lien_l3:
+        try:
+            texte_l3 = telecharger(lien_l3)
+            if "BEGIN:VEVENT" not in texte_l3:
+                raise ValueError("pas un calendrier")
+            l3 = examens_l3(texte_l3)
+            print("L3 maths : %d examen(s) Ecole des Mines" % len(l3))
+        except Exception as e:
+            print("::warning::Calendrier L3 illisible (%s) : on garde les examens deja en base." % e)
+            l3 = None
+
     # 2. connexion, comme l'utilisateur
     code, rep = http(base + "/auth/v1/token?grant_type=password",
                      {"email": courriel, "password": mdp}, {"apikey": cle})
@@ -84,9 +106,18 @@ def main():
     # 3. ne rien ecrire si rien n'a bouge : cela eviterait aussi d'ecraser
     #    inutilement une version locale plus recente
     code, rep = http(base + "/rest/v1/donnees?cle=eq.cours&select=valeur", None, entetes)
+    actuels = []
     if code == 200:
         lignes = json.loads(rep)
-        if lignes and lignes[0].get("valeur", {}).get("cours") == cours:
+        if lignes:
+            actuels = lignes[0].get("valeur", {}).get("cours") or []
+
+    if l3 is None:
+        l3 = [c for c in actuels if c.get("source") == "l3"]
+    cours = sorted(cours + l3, key=lambda c: (c["date"], c["debut"] or ""))
+
+    if code == 200:
+        if actuels == cours:
             print("Identique a ce qui est deja en base : rien a ecrire.")
             return
 
